@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="utf-8">
+  <title id="pageTitle"></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -10,7 +11,7 @@
   <script src="your-script.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <link rel="icon" type="image/png" id="dynamicFavicon" href="default-icon.png">
+<link rel="icon" type="image/png" id="dynamicFavicon" href="default-icon.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -2122,9 +2123,19 @@
 
     <section id="beneficiaries">
       <h1><i class="fas fa-users"></i> المستفيدون</h1>
-      <form id="beneficiariesForm" data-entity="users"> <input type="hidden" id="beneficiaries-docId" /> <input
-          id="beneficiaries-name" placeholder="اسم المستفيد" required /> <input id="beneficiaries-code"
-          placeholder="كود المستفيد" /> <button type="submit" class="btn"><i class="fas fa-save"></i> حفظ</button>
+      <form id="beneficiariesForm" data-entity="users"> <input type="hidden" id="beneficiaries-docId" />
+        <input id="beneficiaries-name" placeholder="اسم المستفيد" required />
+        <input id="beneficiaries-code" placeholder="كود المستفيد" />
+        <select id="beneficiaries-type" required>
+          <option value="">اختر نوع المستفيد</option>
+          <option value="client">عميل</option>
+          <option value="supplier">مورد</option>
+          <option value="operation-contractor">مقاول تشغيل</option>
+          <option value="worker">عامل</option>
+          <option value="transport-contractor">مقاول نقل</option>
+          <option value="other">أخرى</option>
+        </select>
+        <button type="submit" class="btn"><i class="fas fa-save"></i> حفظ</button>
         <button type="button" class="muted clear-btn"><i class="fas fa-eraser"></i> مسح</button>
       </form>
       <div class="toolbar"> <button type="button" class="refresh-btn" onclick="refreshEntity('beneficiaries', this)"> <i
@@ -2221,6 +2232,19 @@
                     <option value="">اختر البنك</option>
                   </select>
                 </label>
+                <label>نوع المستفيد
+                  <select id="beneficiaryTypeFilter">
+                    <option value="">كل الأنواع</option>
+                    <option value="client">عميل</option>
+                    <option value="supplier">مورد</option>
+                    <option value="operation-contractor">مقاول تشغيل</option>
+                    <option value="worker">عامل</option>
+                    <option value="transport-contractor">مقاول نقل</option>
+                    <option value="other">أخرى</option>
+                  </select>
+
+                </label>
+
                 <label>المستفيد
                   <select id="beneficiarySelectInput">
                     <option value="">اختر المستفيد</option>
@@ -2645,15 +2669,16 @@
         <div id="pageSettings">
           <div class="card-header text-center">إعدادات الصفحة</div>
           <div class="grid-item mb-3">
-            <label>اسم الصفحة:</label>
-            <input type="text" id="pageName" class="form-control">
-          </div>
+              <label>اسم الصفحة:</label>
+  <input type="text" id="pageName">          </div>
           <div class="grid-item mb-3">
-            <label>شعار الصفحة (لوجو):</label>
-            <input type="file" id="logoFile" class="form-control">
-            <img id="logoPreview" src="" alt="شعار" width="100" style="display:none; margin-top: 10px;">
+           <label>شعار الصفحة (لوجو):</label>
+  <input type="file" id="logoFile">
+  <img id="logoPreview" src="" alt="معاينة اللوجو">
           </div>
-          <button id="saveButton" class="btn btn-success">💾 حفظ الإعدادات</button>
+          <div class="text-center">
+            <button id="savePageSettingsBtn" class="btn"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+          </div>
         </div>
       </div>
     </section>
@@ -2835,20 +2860,12 @@
 
             <div class="grid-item">
               <label>الدولة</label>
-              <select id="country" onchange="loadGovernorates()">
-                <option value="">-- اختر الدولة --</option>
-                <option value="egypt">مصر</option>
-                <option value="ksa">السعودية</option>
-                <option value="kuwait">الكويت</option>
-                <option value="uae">الإمارات</option>
-              </select>
+              <input id="country" type="text" placeholder="ادخل الدولة">
             </div>
 
             <div class="grid-item">
               <label>المحافظة</label>
-              <select id="governorate">
-                <option value="">-- اختر المحافظة --</option>
-              </select>
+              <input id="governorate" type="text" placeholder="ادخل المحافظة">
             </div>
 
             <div class="grid-item">
@@ -2884,6 +2901,11 @@
                 <option>مسيحي</option>
                 <option>أخرى</option>
               </select>
+            </div>
+
+            <div class="grid-item">
+              <label> عدد لابناء</label>
+              <input id="children" type="number" placeholder="ادخل عدد الابناء">
             </div>
 
             <div class="grid-item">
@@ -3993,6 +4015,7 @@
       table.style.borderCollapse = "collapse";
 
       let headers = ["الكود", "الاسم"];
+      if (entity === "beneficiaries") headers.push("نوع المستفيد");
       if (entity === "companies") headers.push("الاسم الإنجليزي");
       if (entity === "banks") headers.push("الرصيد الأول");
       headers.push("الإجراءات");
@@ -4010,6 +4033,7 @@
           tr.innerHTML = `
         <td>${d.code || ""}</td>
         <td>${d.name || ""}</td>
+        ${entity === "beneficiaries" ? `<td>${d.type || ""}</td>` : ""}
         ${entity === "companies" ? `<td>${d.nameEn || ""}</td>` : ""}
         ${entity === "banks" ? `<td>${d.openingBalance || 0}</td>` : ""}
         <td>
@@ -4048,9 +4072,11 @@
           } else if (act === "edit") {
             const item = allData[entity][id];
             document.getElementById(entity + "-docId").value = id;
+            document.getElementById(entity + "-code").value = item.code || "";
             document.getElementById(entity + "-name").value = item.name || "";
             if (entity === "companies") document.getElementById("companies-name-english").value = item.nameEn || "";
             if (entity === "banks") document.getElementById("banks-opening-balance").value = item.openingBalance || 0;
+            if (entity === "beneficiaries") document.getElementById("beneficiaries-type").value = item.type || "";
             document.getElementById(entity + "-status").textContent = "وضع التعديل ✏️";
             window.scrollTo({ top: 0, behavior: "smooth" });
           }
@@ -4069,6 +4095,7 @@
         e.preventDefault();
 
         const name = document.getElementById(entity + "-name").value.trim();
+        const type = (entity === "beneficiaries") ? document.getElementById("beneficiaries-type").value : "";
         const nameEn = (entity === "companies") ? document.getElementById("companies-name-english").value.trim() : "";
 
         if (!name) {
@@ -4086,6 +4113,7 @@
         const payload = { name, code, updatedAt: Date.now() };
         if (entity === "companies") payload.nameEn = nameEn;
         if (entity === "banks") payload.openingBalance = openingBalance;
+        if (entity === "beneficiaries") payload.type = type;
 
         if (id) {
           await editEntity(entity, id, payload, `تعديل ${entity}`);
@@ -4118,6 +4146,8 @@
       document.getElementById(entity + "-status").textContent = "";
       if (entity === "companies") document.getElementById("companies-name-english").value = "";
       if (entity === "banks") document.getElementById("banks-opening-balance").value = "";
+      if (entity === "beneficiaries") document.getElementById("beneficiaries-type").value = "";
+
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4292,16 +4322,60 @@
 
     function formatNumber(n) { return (n === null || isNaN(n)) ? "0" : Number(n).toLocaleString(); }
 
+    // 🔹 تحميل جميع البيانات
     ["companies", "projects", "banks", "beneficiaries"].forEach(entity => {
       onValue(ref(db, entity), snapshot => {
         allData[entity] = snapshot.val() || {};
+
         fillSelect(companySelect, allData.companies);
         fillSelect(bankSelect, allData.banks);
         fillSelect(bankSelectDeposit, allData.banks);
-        fillSelect(beneficiarySelect, allData.beneficiaries);
         fillSelect(projectSelect, allData.projects);
+
+        // ✅ نملأ المستفيدين فقط بعد تحميلهم فعلاً
+        if (entity === "beneficiaries") {
+          const selectedType = document.getElementById("beneficiaryTypeFilter")?.value || "";
+          filterBeneficiaries(selectedType);
+        }
       });
     });
+
+    // 🔹 دالة الفلترة حسب النوع
+    function filterBeneficiaries(type) {
+      const selectEl = document.getElementById("beneficiarySelectInput");
+      selectEl.innerHTML = '<option value="">اختر المستفيد</option>';
+      const beneficiaries = allData.beneficiaries || {};
+
+      Object.entries(beneficiaries).forEach(([id, item]) => {
+        const itemType = (item.type || item.beneficiaryType || item["نوع"] || "").trim().toLowerCase();
+        const selectedType = (type || "").trim().toLowerCase();
+
+        // ✅ مقارنة بالعربية والإنجليزية
+        const matches =
+          !selectedType ||
+          itemType === selectedType ||
+          (selectedType === "client" && itemType === "عميل") ||
+          (selectedType === "supplier" && itemType === "مورد") ||
+          (selectedType === "operation-contractor" && itemType === "مقاول تشغيل") ||
+          (selectedType === "worker" && itemType === "عامل") ||
+          (selectedType === "transport-contractor" && itemType === "مقاول نقل") ||
+          (selectedType === "other" && itemType === "أخرى");
+
+        if (matches) {
+          const opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = `${item.name} ${item.code ? "(" + item.code + ")" : ""}`;
+          selectEl.appendChild(opt);
+        }
+      });
+    }
+
+    // 🔹 حدث عند تغيير نوع المستفيد
+    document.getElementById("beneficiaryTypeFilter").addEventListener("change", e => {
+      const selectedType = e.target.value;
+      filterBeneficiaries(selectedType);
+    });
+
 
     chequeInput.addEventListener("input", () => {
       if (!hasPerm("transactions", "view")) {
@@ -4961,128 +5035,125 @@
       const w = window.open("", "_blank");
       const doc = w.document;
 
-      doc.write(`<html lang="ar" dir="rtl">
-        <head>
-          <meta charset="UTF-8">
-          <title>فاتورة مالية</title>
-          <style>
-            body { font-family: "Segoe UI", Tahoma, sans-serif; margin: 0; padding: 10px; background: #fff; }
-            .wrap { max-width: 1200px; margin: auto; }
-            .card { background: #fff; padding: 14px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
-            table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
-            table th, table td { padding: 8px; border: 1px solid #ddd; text-align: center; }
-            table thead tr { background-color: #f4c29a; font-weight: bold; }
-            .header-table td { border: 0; font-weight: 700; font-size: 14px; text-align: center; }
-            .small { font-size: 13px; color: #666; }
-            .tables-wrap { display: grid; grid-template-columns: 1fr 1fr; margin-top: 20px; }
-            @media (max-width:880px) { .tables-wrap { grid-template-columns: 1fr; } }
-            @media print { body { padding: 0; } .card { box-shadow: none; border: none; } }
-          </style>
-        </head>
-        <body>
-          <div class="wrap">
-            <div class="card">
-              <table class="header-table" style="width:100%; background:#3f89f862; border-radius:8px;">
-                <tr>
-                  <td style="text-align:right; padding:10px;">${issueData.companyAr}</td>
-                  <td style="text-align:center; padding:10px;">الإصدارات: ${issueData.year}</td>
-                  <td style="text-align:left; padding:10px;">${issueData.companyEn}</td>
-                </tr>
-              </table>
-              <table id="withdrawals-table">
-                <thead>
-                  <tr>
-                    <td style="font-weight:600"> التاريخ: ${issueData.date || "00/00/0000"}</td>
-                    <td colspan="5"></td>
-                    <td style="font-weight:600"> رقم الإصدار: ${issueData.issueNumber || 0}</td>
-                  </tr>
-                  <tr>
-                    <th>م</th>
-                    <th>رقم الشيك</th>
-                    <th>المطلوب للدفعة</th>
-                    <th>البنك</th>
-                    <th>المستفيد</th>
-                    <th>مبررات الصرف</th>
-                    <th>المشروع</th>
-                  </tr>
-                </thead>
-                <tbody id="withdrawals-tbody"></tbody>
-                  <tfoot>
-                    <tr>
-                      <td colspan="2" style="text-align:right; font-weight:800; background:#f2f8ff">الإجمالي</td>
-                      <td id="totalWithdraw" style="font-weight:800; text-align:center; background:#f2f8ff">0</td>
-                      <td colspan="4"></td>
-                    </tr>
-                  </tfoot>
-                </table>
-                <div class="tables-wrap">
-                  <div>
-                    <table id="receipts-table">
-                      <thead>
-                        <tr><th>البنك</th><th>سند القبض</th><th>القيمة</th><th>شرح الدفعة</th></tr>
-                      </thead>
-                      <tbody id="receipts-tbody"></tbody>
-                    </table>
-                  </div>
-                  <div>
-                    <table id="balances-table">
-                      <thead>
-                        <tr>
-                          <th>البنك</th>
-                          <th>رصيد أول</th>
-                          <th>إيداع</th>
-                          <th>إجمالي بعد الإيداع</th>
-                          <th>سحب</th>
-                          <th>الرصيد الحالي</th>
-                        </tr>
-                      </thead>
-                      <tbody id="balances-tbody"></tbody>
-                    </table>
-                  </div>
-                </div>
-                <div class="signature">
-                  المحاسب / <span id="accountantName" style="text-decoration:underline;">-----------</span>
-                </div>
-                </div>
-              </table>
-            </div>
+      // نكتب الـ HTML الأساسي (بدون تحميل مكتبات عبر doc.write)
+      doc.write(`
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <title>فاتورة مالية</title>
+    <!-- خط عربي من Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+        margin: 0; padding: 10px; background: #fff;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .wrap { max-width: 1200px; margin: auto; }
+      .card { background: #fff; padding: 1px; border-radius: 5px; box-shadow: 0 0px 0px rgba(0,0,0,0.06); }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 0px; direction: rtl;  table-layout: auto !important; white-space: nowrap; }
+      table th, table td { padding: 5px; border: 1px solid #ddd; text-align: center; }
+      table thead tr { background-color: #f4c29a; font-weight: bold; }
+      .header-table td { border: 0; font-weight: 700; font-size: 12px; text-align: center; }
+      .small { font-size: 13px; color: #666; }
+      .tables-wrap { display: grid; grid-template-columns: 1fr 1fr; margin-top: 0px; gap: 0px; }
+      @media (max-width:880px) { .tables-wrap { grid-template-columns: 1fr; } }
+      @media print { body { padding: 0; } .card { box-shadow: none; border: none; } #downloadPdfBtn { display:none; } }
+
+      /* زر تحميل PDF */
+      #downloadPdfBtn {
+        display: inline-block;
+        padding: 8px 20px;
+        margin-bottom: 15px;
+        background: #3f89f8;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: background 0.3s;
+      }
+      #downloadPdfBtn:hover { background: #2b6fcc; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <button id="downloadPdfBtn">📄 تحميل كـ PDF</button>
+      <div class="card" id="invoiceContent">
+        <table class="header-table" style="width:100%; background:#3f89f862; border-radius:0px;">
+          <tr>
+            <td style="text-align:right; padding:10px;">${issueData.companyAr || ""}</td>
+            <td style="text-align:center; padding:10px;">  الاصدارت - ${issueData.year || ""}</td>
+            <td style="text-align:left; padding:10px;">${issueData.companyEn || ""}</td>
+          </tr>
+        </table>
+
+        <table id="withdrawals-table">
+          <thead>
+            <tr>
+              <td style="font-weight:600">  التاريخ - ${issueData.date || "00/00/0000"}</td>
+              <td colspan="5"></td>
+              <td style="font-weight:600">  رقم الاصدار  - ${issueData.issueNumber || 0}</td>
+            </tr>
+            <tr>
+              <th>م</th>
+              <th>رقم الشيك</th>
+              <th>المطلوب للدفعة</th>
+              <th>البنك</th>
+              <th>المستفيد</th>
+              <th>مبررات الصرف</th>
+              <th>المشروع</th>
+            </tr>
+          </thead>
+          <tbody id="withdrawals-tbody"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" style="text-align:right; font-weight:800; background:#f2f8ff">الإجمالي</td>
+              <td id="totalWithdraw" style="font-weight:800; text-align:center; background:#f2f8ff">0</td>
+              <td colspan="4"></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="tables-wrap">
+          <div>
+            <table id="receipts-table">
+              <thead>
+                <tr><th>البنك</th><th>سند القبض</th><th>القيمة</th><th>شرح الدفعة</th></tr>
+              </thead>
+              <tbody id="receipts-tbody"></tbody>
+            </table>
           </div>
-        </body>
-      </html>`);
+          <div>
+            <table id="balances-table">
+              <thead>
+                <tr>
+                  <th>البنك</th>
+                  <th>رصيد أول</th>
+                  <th>إيداع</th>
+                  <th>إجمالي بعد الإيداع</th>
+                  <th>سحب</th>
+                  <th>الرصيد الحالي</th>
+                </tr>
+              </thead>
+              <tbody id="balances-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="signature" style="margin-top:20px;">
+          المحاسب / <span id="accountantName" style="text-decoration:underline;">-----------</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+`);
 
       doc.close();
 
-      if (currentUser) {
-        const nameSpan = w.document.getElementById("accountantName");
-        const signatureContainer = nameSpan?.parentElement;
-
-        if (nameSpan && signatureContainer) {
-          // إزالة أي توقيع سابق
-          const oldSig = signatureContainer.querySelector("img");
-          if (oldSig) oldSig.remove();
-
-          // عرض الاسم
-          if (currentUser.fullName) {
-            nameSpan.textContent = currentUser.fullName;
-          } else {
-            nameSpan.textContent = "-----------";
-          }
-
-          // إضافة التوقيع إن وجد
-          if (currentUser.signatureURL) {
-            const sigImg = w.document.createElement("img");
-            sigImg.src = currentUser.signatureURL;
-            sigImg.alt = "توقيع المحاسب";
-            sigImg.style.maxWidth = "140px";
-            sigImg.style.display = "block";
-            sigImg.style.marginTop = "8px";
-            sigImg.style.marginRight = "20px"; // محاذاة لطيفة مع النص
-
-            signatureContainer.appendChild(sigImg);
-          }
-        }
-      }
-
+      // === تعبئة البيانات كما في الكود الأصلي ===
       const tbodyWithdrawals = w.document.getElementById("withdrawals-tbody");
       const tbodyReceipts = w.document.getElementById("receipts-tbody");
       const tbodyBalances = w.document.getElementById("balances-tbody");
@@ -5102,8 +5173,7 @@
         <td>${getNameById(allData.banks, tx.bankId)}</td>
         <td>${getNameById(allData.beneficiaries, tx.beneficiaryId)}</td>
         <td>${tx.reason || "-"}</td>
-        <td>${getNameById(allData.projects, tx.projectId)}</td>
-      `;
+        <td>${getNameById(allData.projects, tx.projectId)}</td>`;
           tbodyWithdrawals.appendChild(tr);
         });
       } else {
@@ -5113,31 +5183,26 @@
 
       const receipts = transactions.filter(t => Number(t.receiptValue) > 0);
       let totalReceipts = 0;
-
       if (receipts.length) {
         receipts.forEach(r => {
           const value = Number(r.receiptValue || 0);
           totalReceipts += value;
           const tr = w.document.createElement("tr");
           tr.innerHTML = `
-            <td>${getNameById(allData.banks, r.bankId)}</td>
-            <td>${r.receiptNo || "-"}</td>
-            <td>${value}</td>
-            <td>${r.paymentDesc || "-"}</td>
-          `;
+        <td>${getNameById(allData.banks, r.bankId)}</td>
+        <td>${r.receiptNo || "-"}</td>
+        <td>${value}</td>
+        <td>${r.paymentDesc || "-"}</td>`;
           tbodyReceipts.appendChild(tr);
         });
-
         const tfoot = w.document.createElement("tfoot");
         tfoot.innerHTML = `
-          <tr>
-            <td colspan="2" style="text-align:right; font-weight:800; background:#f2f8ff">الإجمالي</td>
-            <td style="font-weight:800; background:#f2f8ff">${totalReceipts}</td>
-            <td></td>
-          </tr>
-        `;
+      <tr>
+        <td colspan="2" style="text-align:right; font-weight:800; background:#f2f8ff">الإجمالي</td>
+        <td style="font-weight:800; background:#f2f8ff">${totalReceipts}</td>
+        <td></td>
+      </tr>`;
         w.document.getElementById("receipts-table").appendChild(tfoot);
-
       } else {
         tbodyReceipts.innerHTML = `<tr><td colspan="4" class="small">لا توجد سندات قبض</td></tr>`;
       }
@@ -5165,28 +5230,114 @@
 
         const tr = w.document.createElement("tr");
         tr.innerHTML = `
-          <td>${getNameById(allData.banks, bankId)}</td>
-          <td>${bankStart}</td>
-          <td>${data.deposit}</td>
-          <td>${afterDeposit}</td>
-          <td>${data.withdraw}</td>
-          <td>${current}</td>
-          `;
+      <td>${getNameById(allData.banks, bankId)}</td>
+      <td>${bankStart}</td>
+      <td>${data.deposit}</td>
+      <td>${afterDeposit}</td>
+      <td>${data.withdraw}</td>
+      <td>${current}</td>`;
         tbodyBalances.appendChild(tr);
       });
 
       const tfootBal = w.document.createElement("tfoot");
       tfootBal.innerHTML = `
-        <tr style="background:#f2f8ff; font-weight:800">
-        <td>الإجمالي</td>
-        <td>${totalStart}</td>
-        <td>${totalDeposit}</td>
-        <td>${totalAfterDeposit}</td>
-        <td>${totalWithdrawals}</td>
-        <td>${totalCurrent}</td>
-        </tr>
-      `;
+    <tr style="background:#f2f8ff; font-weight:800">
+      <td>الإجمالي</td>
+      <td>${totalStart}</td>
+      <td>${totalDeposit}</td>
+      <td>${totalAfterDeposit}</td>
+      <td>${totalWithdrawals}</td>
+      <td>${totalCurrent}</td>
+    </tr>`;
       w.document.getElementById("balances-table").appendChild(tfootBal);
+
+      // === حقن مكتبة html2pdf وإعداد زر التحميل بعد تحميل المكتبة ===
+      (function injectHtml2PdfAndSetup() {
+        // إذا كانت المكتبة محملة بالفعل في النافذة الأصلية، يمكننا محاولة الوصول إليها مباشرة
+        const scriptUrl = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+
+        // نحقق إن كانت النافذة الجديدة جاهزة
+        const head = w.document.head || w.document.getElementsByTagName('head')[0] || w.document.documentElement;
+
+        const script = w.document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = scriptUrl;
+        script.onload = function () {
+          try {
+            const btn = w.document.getElementById("downloadPdfBtn");
+            const content = w.document.getElementById("invoiceContent");
+            if (!btn || !content) return;
+
+            btn.addEventListener("click", function () {
+              // نخفي الزر أثناء التصدير حتى لا يظهر داخل الصورة
+              btn.style.display = 'none';
+
+              const safeFilename = 'invoice-' + (String(issueData.issueNumber || "فاتورة")).replace(/[\\/:*?"<>|]/g, "_") + '.pdf';
+              const opt = {
+                margin: 0.4,
+                filename: safeFilename,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+              };
+
+
+              try {
+                w.html2pdf().from(content).set(opt).save().then(() => {
+                  btn.style.display = 'inline-block';
+                }).catch(err => {
+                  console.error("html2pdf error:", err);
+                  btn.style.display = 'inline-block';
+                });
+              } catch (err) {
+                // في حال كانت واجهة html2pdf مختلفة، نحاول استدعاء مباشرة
+                try {
+                  html2pdf().from(content).set(opt).save();
+                  // نعيد الزر بعد دقيقة قصيرة كحل احتياطي (غالباً سيُنتهي قبل ذلك)
+                  setTimeout(() => btn.style.display = 'inline-block', 1500);
+                } catch (e) {
+                  console.error("Failed to generate PDF:", e);
+                  btn.style.display = 'inline-block';
+                }
+              }
+            });
+          } catch (e) {
+            console.error("setup error:", e);
+          }
+        };
+
+        script.onerror = function (e) {
+          console.error("Failed to load html2pdf script", e);
+        };
+
+        head.appendChild(script);
+      })();
+
+      // === إذا كان لديك currentUser لتعيين الاسم والتوقيع، نفّذ نفس المنطق بعد doc.close() ===
+      if (typeof currentUser !== 'undefined' && currentUser) {
+        const nameSpan = w.document.getElementById("accountantName");
+        const signatureContainer = nameSpan?.parentElement;
+        if (nameSpan && signatureContainer) {
+          const oldSig = signatureContainer.querySelector("img");
+          if (oldSig) oldSig.remove();
+          if (currentUser.fullName) {
+            nameSpan.textContent = currentUser.fullName;
+          } else {
+            nameSpan.textContent = "-----------";
+          }
+          if (currentUser.signatureURL) {
+            const sigImg = w.document.createElement("img");
+            sigImg.src = currentUser.signatureURL;
+            sigImg.alt = "توقيع المحاسب";
+            sigImg.style.maxWidth = "140px";
+            sigImg.style.display = "block";
+            sigImg.style.marginTop = "8px";
+            sigImg.style.marginRight = "20px";
+            signatureContainer.appendChild(sigImg);
+          }
+        }
+      }
+
     };
 
     setTimeout(() => {
@@ -6395,7 +6546,7 @@
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////// إدارة الحاله التأمينية /////////////////////////
+    ///////////////////////////////////////// إدارة الحاله التأمينية /////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
     // ✅ حفظ الحالة في Firebase
     window.saveStatus = async function () {
@@ -6685,7 +6836,7 @@
     });
 
     ////////////////////////////////////////////////////////////////////////
-    ////////////////////////////// التامينات //////////////////////////////
+    ////////////////////////////// التامينات /////////////////////////////////
     ///////////////////////////////////////////////////////////////////////
     window.assetList = [];
 
@@ -6842,7 +6993,7 @@
     });
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////// الهيكل التنظيمي ////////////////////////////////////////////
+    //////////////////////////////// الهيكل التنظيمي /////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////
     let orgData = { id: "ROOT", name: "الشركة", title: "المؤسسة", dept: "الرئيسي", children: [], employees: [] };
 
@@ -7302,6 +7453,7 @@
         setVal("religion", emp.personal?.religion);
         setVal("maritalStatus", emp.personal?.maritalStatus);
         setVal("gender", emp.personal?.gender);
+        setVal("children", emp.personal?.children);
         setVal("numberEmployess", emp.personal?.numberEmployess);
 
         // education
@@ -7602,17 +7754,7 @@
             document.getElementById("employeeCode").value = employeeCode;
           }
 
-          let phone = String(document.getElementById("numberEmployess").value).trim();
-          let nid = document.getElementById("nid").value.trim();
-
-          if (!/^\d{11}$/.test(phone)) {
-            alert("❌ رقم الهاتف يجب أن يكون 11 رقم");
-            return;
-          }
-          if (!/^\d{14}$/.test(nid)) {
-            alert("❌ الرقم القومي يجب أن يكون 14 رقم");
-            return;
-          }
+          const phone = document.getElementById("numberEmployess")?.value || "";
 
           // personal
           const employeeData = {
@@ -7628,6 +7770,7 @@
             religion: document.getElementById("religion")?.value || "",
             maritalStatus: document.getElementById("maritalStatus")?.value || "",
             gender: document.getElementById("gender")?.value || "",
+            gender: document.getElementById("children")?.value || "",
             numberEmployess: phone,
             regionCode: document.getElementById("employeeRegion")?.value || ""
           };
@@ -10738,98 +10881,74 @@
     }
 
     ///////////////////////////////////////////////////////////////////
-    /////////////////////////// اعدادات الصفحه///////////////////////
-    //////////////////////////////////////////////////////////////////
-    window.addEventListener('DOMContentLoaded', () => {
+    /////////////////////////// إعدادات الصفحة ///////////////////////
+    ///////////////////////////////////////////////////////////////////
+// ===== عناصر الصفحة =====
+const inputPageName = document.getElementById("pageName");
+const inputLogoFile = document.getElementById("logoFile");
+const logoPreviewEl = document.getElementById("logoPreview");
+const saveBtn3 = document.getElementById("savePageSettingsBtn");
+const faviconEl = document.getElementById("dynamicFavicon");
 
-      loadPageSettingsFromLocal();
 
-      loadPageSettings();
+const pageSettingsRef = ref(db, "pageSettings");
+let logoBase64 = "";
 
-      document.getElementById('logoFile').addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function (event) {
-            const logo = event.target.result;
-            const preview = document.getElementById('logoPreview');
-            preview.src = logo;
-            preview.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
-        }
-      });
+// ===== تحميل البيانات عند فتح الصفحة =====
+onValue(pageSettingsRef, (snapshot) => {
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    
+    if (data.pageName) {
+      inputPageName.value = data.pageName;        // للإعدادات
+      document.title = data.pageName;            // لتحديث شريط المتصفح
+    }
 
-      document.getElementById('saveButton').addEventListener('click', savePageSettings);
+    if (data.logoBase64) {
+      logoBase64 = data.logoBase64;
+      logoPreviewEl.src = logoBase64;
+      logoPreviewEl.style.display = "block";
 
-      async function savePageSettings() {
-        const pageName = document.getElementById('pageName').value.trim();
-        const logoUrl = document.getElementById('logoPreview').src;
+      faviconEl.href = logoBase64; // تحديث favicon
+    }
+  }
+});
 
-        if (!pageName || !logoUrl || logoUrl === window.location.href) {
-          alert("❗ من فضلك أدخل اسم الصفحة وارفع شعار");
-          return;
-        }
+// ===== معاينة اللوجو عند رفع صورة جديدة =====
+inputLogoFile.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      logoBase64 = reader.result;
 
-        const settings = { pageName, logoUrl };
+      logoPreviewEl.src = logoBase64;
+      logoPreviewEl.style.display = "block";
 
-        try {
-          await set(ref(db, 'pageSettings'), settings);
-          localStorage.setItem('pageSettings', JSON.stringify(settings));
-          alert("✅ تم حفظ الإعدادات بنجاح");
-          applyPageSettings(settings);
-        } catch (error) {
-          console.error("❌ فشل الحفظ:", error);
-        }
-      }
 
-      async function loadPageSettings() {
-        try {
-          const snapshot = await get(ref(db, 'pageSettings'));
-          if (snapshot.exists()) {
-            const settings = snapshot.val();
-            document.getElementById('pageName').value = settings.pageName;
-            document.getElementById('logoPreview').src = settings.logoUrl;
-            document.getElementById('logoPreview').style.display = 'block';
-            applyPageSettings(settings);
-            localStorage.setItem('pageSettings', JSON.stringify(settings));
-          }
-        } catch (error) {
-          console.error("❌ فشل تحميل الإعدادات:", error);
-        }
-      }
+      faviconEl.href = logoBase64;
+    };
+    reader.readAsDataURL(file);
+  }
+});
 
-      function loadPageSettingsFromLocal() {
-        const data = localStorage.getItem('pageSettings');
-        if (data) {
-          const settings = JSON.parse(data);
-          document.getElementById('pageName').value = settings.pageName;
-          document.getElementById('logoPreview').src = settings.logoUrl;
-          document.getElementById('logoPreview').style.display = 'block';
-          applyPageSettings(settings);
-        }
-      }
+// ===== حفظ الإعدادات =====
+saveBtn3.addEventListener("click", async () => {
+  const pageName = inputPageName.value.trim();
+  if (!pageName) {
+    alert("يرجى إدخال اسم الصفحة");
+    return;
+  }
 
-      function applyPageSettings(settings) {
-        document.title = settings.pageName;
+  await set(pageSettingsRef, {
+    pageName: pageName,
+    logoBase64: logoBase64
+  });
 
-        const pageTitleEl = document.getElementById('pageTitle');
-        if (pageTitleEl) {
-          pageTitleEl.textContent = settings.pageName;
-        }
+  document.title = pageName;
 
-        let favicon = document.getElementById('dynamicFavicon');
-        if (!favicon) {
-          favicon = document.createElement('link');
-          favicon.rel = 'icon';
-          favicon.id = 'dynamicFavicon';
-          document.head.appendChild(favicon);
-        }
-        favicon.href = settings.logoUrl;
-      }
-
-    });
-
+  alert("تم حفظ الإعدادات بنجاح ✅");
+});
   </script>
 
   <script>
